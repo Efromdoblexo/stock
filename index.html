@@ -151,6 +151,7 @@
     <div class="pad-actions" style="grid-template-columns:1fr">
       <button class="big" id="pinGo">Unlock</button>
     </div>
+    <div id="ver" style="text-align:center;font-size:18px;color:#33374f;margin-top:12px"></div>
   </div>
 </div>
 
@@ -159,7 +160,7 @@
 <script>
 (function(){
   "use strict";
-  var API = "https://script.google.com/macros/s/AKfycbzmt25VyHeq2bE5u4vXUt1_UeqUy8B5X0f5-h2mDguPk7AZD32uN15kznFstzdR9pM/exec";
+  var API = "https://script.google.com/macros/s/AKfycbwmgrkHx9tG9KSXOK5bw4O9LrJMHXL7yEmo29Ug78LPMp_QCOVzhx9fKDpMqepX7oJT/exec";
 
   /* Fallback item list (from the inventory sheet). If the sheet has a Section column,
      the script sends it and it replaces these sections. */
@@ -448,6 +449,7 @@
     if(e.key==="Escape" && !$("countPad").hidden) closePad();
   });
 
+  $("ver").textContent = "Page version 6 · script …" + API.split("/s/")[1].slice(-10, -5);
   /* ---------- Start ---------- */
   try{ var cache=JSON.parse(store("get","stockCache")||"null"); if(cache&&cache.items){ items=cache.items; counts=cache.counts||{}; } }catch(e){}
   render();
