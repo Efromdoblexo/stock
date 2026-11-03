@@ -202,22 +202,33 @@
     body.pin = pin;
     return fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify(body),redirect:"follow"})
+      .catch(function(){ var e=new Error("network"); e.kind="network"; throw e; })
       .then(function(r){ return r.text(); })
       .then(function(t){
-        var d; try{ d=JSON.parse(t); }catch(e){ throw new Error("Bad reply from script"); }
+        var d; try{ d=JSON.parse(t); }catch(x){
+          var e=new Error("notjson"); e.kind=/sign in|accounts\.google|ServiceLogin/i.test(t)?"signin":"notjson"; throw e; }
         if(isBadPin(d)){ var e2=new Error("bad_pin"); e2.badPin=true; throw e2; }
-        if(d && d.ok===false) throw new Error(d.error||"Script error");
+        if(d && d.ok===false){ var e3=new Error(d.error||"Script error"); e3.kind="script"; throw e3; }
         return d;
       });
+  }
+  function explain(e){
+    if(!e) return "Something went wrong. Try again.";
+    if(e.kind==="network") return "Can't reach the script. Check Wi-Fi, then try again.";
+    if(e.kind==="signin") return "The script is asking for a Google sign-in. Redeploy it with access set to \u201cAnyone\u201d.";
+    if(e.kind==="notjson") return "The script didn't send stock data back. Make sure the new Code.gs is deployed as a new version.";
+    if(e.kind==="script") return "Script error: "+e.message;
+    return e.message||"Something went wrong.";
   }
   function isBadPin(d){
     if(!d) return false;
     var s=((d.error||"")+" "+(d.message||"")+" "+(d.status||"")).toLowerCase();
-    return d.ok===false && /pin|unauth|forbidden|denied/.test(s);
+    if(/not set/.test(s)) return false;
+    return d.ok===false && /bad_pin|bad pin|wrong pin|invalid pin|incorrect pin|unauth|forbidden|denied/.test(s);
   }
   function handleErr(e){
     if(e && e.badPin){ pin=""; store("del","stockPin"); showPin("That PIN didn't work. Try again."); return; }
-    setStatus("Not saved – retrying", true);
+    setStatus("Not saved – retrying", true); toast(explain(e));
     scheduleRetry();
   }
 
@@ -427,7 +438,10 @@
   $("pinGo").onclick=function(){
     if(pinVal.length<4){ $("pinErr").textContent="Enter at least 4 digits."; return; }
     pin=pinVal; $("pinGo").disabled=true; $("pinGo").textContent="Checking…";
-    load().catch(handleErr).then(function(){ $("pinGo").disabled=false; $("pinGo").textContent="Unlock"; });
+    load().catch(function(e){
+      if(e && e.badPin){ pin=""; store("del","stockPin"); showPin("That PIN didn't match the one saved in the script."); }
+      else { pin=""; $("pinErr").textContent=explain(e); setStatus("Not connected",true); }
+    }).then(function(){ $("pinGo").disabled=false; $("pinGo").textContent="Unlock"; });
   };
 
   document.addEventListener("keydown",function(e){
