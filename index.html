@@ -144,7 +144,7 @@ h2.sec{font-size:26px;margin:26px 0 8px;padding:6px 14px;border-left:10px solid 
 <script>
 (function(){
 "use strict";
-var API = 'https://script.google.com/macros/s/AKfycby-QoGvtropx6WSiv9u0OkS4xCgR44a4VlVSbWHqBW0T-th2sjB9tT0_yRjiuBhn8sK/exec';
+var API = 'https://script.google.com/macros/s/AKfycbzmt25VyHeq2bE5u4vXUt1_UeqUy8B5X0f5-h2mDguPk7AZD32uN15kznFstzdR9pM/exec';
 var PIN_KEY = 'doblexo_stock_pin', QUEUE_KEY = 'doblexo_stock_pending';
 
 var items = [];        // {section,item,count}
@@ -170,11 +170,18 @@ function BadPin(){}
 function api(body){
   body.pin = get(PIN_KEY) || '';
   return fetch(API, { method:'POST', body: JSON.stringify(body) })   // text/plain: no CORS preflight
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .catch(function(){ throw new Error('NET'); })
+    .then(function(r){
+      if(!r.ok) throw new Error('The script answered with error '+r.status+'.');
+      return r.text().then(function(t){
+        try{ return JSON.parse(t); }
+        catch(e){ throw new Error('The script sent back a web page instead of data — it may still be running old code, or access isn’t set to “Anyone”.'); }
+      });
+    })
     .then(function(d){
       if(d && d.ok) return d;
-      if(d && d.error==='bad_pin'){ put(PIN_KEY,null); showPin('That PIN didn’t work. Try again.'); throw new BadPin(); }
-      throw new Error((d && d.error) || 'Unexpected reply');
+      if(d && /pin/i.test(String(d.error||''))){ put(PIN_KEY,null); showPin('That PIN didn’t work. Try again.'); throw new BadPin(); }
+      throw new Error('The script says: '+((d && d.error) || 'unexpected reply'));
     });
 }
 
@@ -194,8 +201,8 @@ function load(quiet){
     if(Object.keys(pending).length) flush(); else setStatus('All changes saved', 'ok');
   }).catch(function(e){
     if(e instanceof BadPin) return;
-    if(!loaded){ $('main').innerHTML = '<p class="empty-msg">Couldn’t load the counts.<br>Check the Wi-Fi, then tap “Try again”.</p>'; }
-    setStatus('Can’t reach the sheet right now', 'warn');
+    if(!loaded){ $('main').innerHTML = '<p class="empty-msg">Couldn’t load the counts.</p>'; }
+    setStatus(why(e), 'warn');
     $('retryBtn').classList.remove('hidden');
   });
 }
@@ -212,12 +219,18 @@ function flush(){
   }).catch(function(e){
     flushing = false;
     if(e instanceof BadPin) return;
-    setStatus('Not saved yet — will keep trying', 'warn');
+    setStatus('Not saved yet, will keep trying. '+why(e), 'warn');
     clearTimeout(retryTimer); retryTimer = setTimeout(flush, 8000);
     render();
   });
 }
 
+function why(e){
+  if(!e || e.message==='NET') return navigator.onLine===false
+    ? 'This tablet is offline — check the Wi-Fi.'
+    : 'Can’t reach the script. If the Wi-Fi is fine, check the script is deployed with access “Anyone”.';
+  return e.message;
+}
 function setCount(it, val){
   it.count = val; pending[it.item] = val; savePending(); render(); flush();
 }
@@ -382,7 +395,7 @@ $('newCountBtn').onclick = function(){
     pending = {}; savePending(); applyItems(d.items); render();
     setStatus('New count started — all counts cleared', 'ok');
   }).catch(function(e){
-    if(!(e instanceof BadPin)) setStatus('Couldn’t clear — check the Wi-Fi and try again', 'warn');
+    if(!(e instanceof BadPin)) setStatus('Couldn’t clear. '+why(e), 'warn');
   }).then(function(){ b.disabled=false; b.textContent='Start new count'; });
 };
 
