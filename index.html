@@ -7,11 +7,11 @@
 <style>
   :root{
     --blue:#0118bd;      /* doblexo yves klein blue */
-    --pink:#FA7DE1;      /* doblexo pink flamingo */
     --ink:#0b0b14;
     --paper:#ffffff;
     --soft:#eef0fb;
     --line:#5a5f80;
+    --muted:#33374f;
     --warn:#8a0000;
     --ok:#05612b;
     --focus:#ffbf00;
@@ -22,6 +22,7 @@
     -webkit-tap-highlight-color:transparent}
   button{font:inherit;color:inherit;cursor:pointer}
   :focus-visible{outline:5px solid var(--focus);outline-offset:3px}
+  [hidden]{display:none !important}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
   /* Header */
@@ -42,39 +43,41 @@
   h2{font-size:28px;margin:28px 0 10px;padding-bottom:6px;border-bottom:4px solid var(--blue);color:var(--blue)}
   .note{font-size:20px;padding:14px 16px;border-radius:12px;background:var(--soft);border-left:8px solid var(--blue);margin:12px 0}
 
-  /* Count rows */
+  /* Count / Bought rows */
   .row{display:flex;align-items:center;gap:16px;width:100%;min-height:84px;margin:10px 0;
     padding:10px 12px 10px 18px;border:3px solid var(--line);border-radius:16px;background:#fff;text-align:left}
   .row:active{background:var(--soft)}
   .row .name{flex:1;font-size:28px;font-weight:700}
+  .row .hint{display:block;font-size:19px;font-weight:600;color:var(--muted)}
   .row .val{min-width:140px;min-height:64px;padding:0 14px;border:3px solid var(--blue);border-radius:12px;
     display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:var(--blue);background:var(--soft)}
-  .row .val.empty{color:#33374f;font-size:22px;font-weight:700;background:#fff;border-style:dashed}
+  .row .val.empty{color:var(--muted);font-size:22px;font-weight:700;background:#fff;border-style:dashed}
 
   /* Footer actions */
   .bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:#fff;border-top:4px solid var(--blue);
     padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:12px;justify-content:center}
-  .bar[hidden],[hidden]{display:none !important}
   .big{min-height:76px;padding:0 28px;border-radius:16px;font-size:26px;font-weight:800;border:3px solid var(--blue);
     background:var(--blue);color:#fff;flex:1;max-width:560px}
   .big.ghost{background:#fff;color:var(--blue)}
   .big.danger{background:var(--warn);border-color:var(--warn);color:#fff}
 
-  /* Order list */
-  .order-item{display:flex;justify-content:space-between;gap:16px;font-size:26px;padding:14px 4px;border-bottom:2px solid #c9cce0}
-  .order-item b{font-weight:800}
-  .order-item .qty{font-weight:800;color:var(--blue);white-space:nowrap;text-align:right;min-width:90px}
-  .order-item .qty.missing{color:#33374f;font-size:22px;font-style:italic}
+  /* Summary table */
+  table{width:100%;border-collapse:collapse;font-size:24px}
+  th{font-size:18px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);text-align:right;padding:8px 6px;border-bottom:3px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:14px 6px;border-bottom:2px solid #c9cce0;text-align:right;font-weight:700;white-space:nowrap}
+  td:first-child{white-space:normal;font-weight:800}
+  td.dim{color:var(--muted);font-weight:600}
+  td.sugg{color:var(--blue);font-weight:900;font-size:28px}
 
   /* Overlays */
   .overlay{position:fixed;inset:0;z-index:20;background:rgba(5,8,40,.75);display:flex;align-items:center;justify-content:center;padding:12px}
-  .overlay[hidden]{display:none}
   .sheet{background:#fff;border-radius:22px;width:100%;max-width:560px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
   .sheet h3{margin:0 0 4px;font-size:30px}
-  .sheet .sub{font-size:20px;color:#33374f;font-weight:600;margin-bottom:12px}
+  .sheet .sub{font-size:20px;color:var(--muted);font-weight:600;margin-bottom:12px}
   .display{font-size:56px;font-weight:800;text-align:center;min-height:90px;line-height:84px;border:4px solid var(--blue);
     border-radius:14px;margin-bottom:14px;letter-spacing:.04em;color:var(--blue);background:var(--soft)}
-  .display.placeholder{color:#33374f;font-size:28px}
+  .display.placeholder{color:var(--muted);font-size:28px}
   .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .key{min-height:84px;border-radius:16px;border:3px solid var(--ink);background:#fff;font-size:38px;font-weight:800}
   .key:active{background:var(--soft)}
@@ -90,10 +93,8 @@
   .dot.on{background:var(--blue)}
 
   .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:30;background:var(--ink);color:#fff;
-    padding:16px 26px;border-radius:14px;font-size:24px;font-weight:700}
-  .toast[hidden]{display:none}
-  @media (max-width:600px){ .row .name{font-size:24px} .row .val{min-width:110px} h1{font-size:32px} }
-  @media (prefers-reduced-motion:no-preference){ .row,.key,.big{transition:background .1s} }
+    padding:16px 26px;border-radius:14px;font-size:24px;font-weight:700;max-width:90vw;text-align:center}
+  @media (max-width:600px){ .row .name{font-size:24px} .row .val{min-width:110px} h1{font-size:32px} table{font-size:20px} }
 </style>
 </head>
 <body>
@@ -103,25 +104,27 @@
   <h1>Stock Count</h1>
   <span id="status" class="status" role="status" aria-live="polite">Loading…</span>
   <div class="tabs" role="tablist" aria-label="Views">
-    <button class="tab" id="tabCount" role="tab" aria-selected="true" aria-controls="viewCount">Count</button>
-    <button class="tab" id="tabOrder" role="tab" aria-selected="false" aria-controls="viewOrder">Summary</button>
+    <button class="tab" id="tab-count" role="tab" aria-selected="true" aria-controls="view-count" data-view="count">Count</button>
+    <button class="tab" id="tab-bought" role="tab" aria-selected="false" aria-controls="view-bought" data-view="bought">Bought</button>
+    <button class="tab" id="tab-summary" role="tab" aria-selected="false" aria-controls="view-summary" data-view="summary">Summary</button>
   </div>
 </header>
 
 <main>
-  <section id="viewCount" role="tabpanel" aria-labelledby="tabCount"></section>
-  <section id="viewOrder" role="tabpanel" aria-labelledby="tabOrder" hidden></section>
+  <section id="view-count" role="tabpanel" aria-labelledby="tab-count"></section>
+  <section id="view-bought" role="tabpanel" aria-labelledby="tab-bought" hidden></section>
+  <section id="view-summary" role="tabpanel" aria-labelledby="tab-summary" hidden></section>
 </main>
 
-<div class="bar" id="barCount">
+<div class="bar" id="bar-count">
   <button class="big ghost" id="newCountBtn">Start new count</button>
 </div>
-<div class="bar" id="barOrder" hidden>
+<div class="bar" id="bar-summary" hidden>
   <button class="big" id="copyBtn">Copy summary</button>
 </div>
 
-<!-- Count keypad -->
-<div class="overlay" id="countPad" hidden role="dialog" aria-modal="true" aria-labelledby="padTitle">
+<!-- Number keypad -->
+<div class="overlay" id="numPad" hidden role="dialog" aria-modal="true" aria-labelledby="padTitle">
   <div class="sheet">
     <h3 id="padTitle">Item</h3>
     <div class="sub" id="padSub"></div>
@@ -132,7 +135,7 @@
       <button class="big" id="padSave">Save</button>
     </div>
     <div class="pad-actions">
-      <button class="big ghost" id="padBlank">Not counted</button>
+      <button class="big ghost" id="padBlank">Clear entry</button>
       <button class="big" id="padNext">Save &amp; next ›</button>
     </div>
   </div>
@@ -160,33 +163,26 @@
 (function(){
   "use strict";
   var API = "https://script.google.com/macros/s/AKfycbwmgrkHx9tG9KSXOK5bw4O9LrJMHXL7yEmo29Ug78LPMp_QCOVzhx9fKDpMqepX7oJT/exec";
+  var VERSION = 9;
+  var BUFFER = 1.2;   // suggested buy covers average weekly use + 20%
 
-  /* Fallback item list (from the inventory sheet). If the sheet has a Section column,
-     the script sends it and it replaces these sections. */
+  /* Fallback item list, used until the sheet answers. A "Section" column in the sheet replaces these groups. */
   var DEFAULT_ITEMS = [
-    {name:"Whole milk", section:"Milk & Dairy"},
-    {name:"Fat free milk", section:"Milk & Dairy"},
-    {name:"Oat milk", section:"Milk & Dairy"},
-    {name:"Almond milk", section:"Milk & Dairy"},
-    {name:"Heavy creams", section:"Milk & Dairy"},
-    {name:"Lechera", section:"Milk & Dairy"},
-    {name:"Vanilla bean honey", section:"Sweeteners"},
-    {name:"Traditional honey", section:"Sweeteners"},
-    {name:"Brown sugar", section:"Sweeteners"},
-    {name:"Cane sugar", section:"Sweeteners"},
-    {name:"Agave", section:"Sweeteners"},
-    {name:"Biscoff cookies", section:"Toppings"},
-    {name:"Graham crackers", section:"Toppings"},
-    {name:"Fruity pebbles", section:"Toppings"},
-    {name:"Espresso Beans", section:"Coffee & Matcha"},
-    {name:"Cold brew beans", section:"Coffee & Matcha"},
-    {name:"Cold brew concentrate", section:"Coffee & Matcha"},
-    {name:"Matcha", section:"Coffee & Matcha"}
+    {name:"Whole milk", section:"Milk & Dairy"}, {name:"Fat free milk", section:"Milk & Dairy"},
+    {name:"Oat milk", section:"Milk & Dairy"}, {name:"Almond milk", section:"Milk & Dairy"},
+    {name:"Heavy creams", section:"Milk & Dairy"}, {name:"Lechera", section:"Milk & Dairy"},
+    {name:"Vanilla bean honey", section:"Sweeteners"}, {name:"Traditional honey", section:"Sweeteners"},
+    {name:"Brown sugar", section:"Sweeteners"}, {name:"Cane sugar", section:"Sweeteners"},
+    {name:"Agave", section:"Sweeteners"}, {name:"Biscoff cookies", section:"Toppings"},
+    {name:"Graham crackers", section:"Toppings"}, {name:"Fruity pebbles", section:"Toppings"},
+    {name:"Espresso Beans", section:"Coffee & Matcha"}, {name:"Cold brew beans", section:"Coffee & Matcha"},
+    {name:"Cold brew concentrate", section:"Coffee & Matcha"}, {name:"Matcha", section:"Coffee & Matcha"}
   ];
 
   var items = DEFAULT_ITEMS.slice();
-  var counts = {};         // name -> number (missing = not counted)
-  var pending = {};        // name -> number|"" waiting to be saved
+  var data = {count:{}, bought:{}};   // field -> name -> number
+  var usage = {};                     // name -> {avg, weeks}
+  var pending = {};                   // "field|name" -> number|""
   var pin = store("get","stockPin") || "";
   var retryTimer = null, busy = false, view = "count";
 
@@ -196,6 +192,7 @@
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
   function num(v){ if(v===""||v===null||v===undefined) return null; var n=Number(v); return isFinite(n)?n:null; }
   function fmt(n){ return (Math.round(n*100)/100).toString(); }
+  function saveCache(){ store("set","stockCache2",JSON.stringify({items:items,data:data,usage:usage})); }
 
   /* ---------- Server ---------- */
   function call(body){
@@ -212,22 +209,23 @@
         return d;
       });
   }
+  function isBadPin(d){
+    if(!d) return false;
+    var s=((d.error||"")+" "+(d.message||"")).toLowerCase();
+    if(/not set/.test(s)) return false;
+    return d.ok===false && /bad_pin|bad pin|wrong pin|invalid pin|incorrect pin|unauth|forbidden|denied/.test(s);
+  }
   function explain(e){
     if(!e) return "Something went wrong. Try again.";
     if(e.kind==="network") return "Can't reach the script. Check Wi-Fi, then try again.";
-    if(e.kind==="signin") return "The script is asking for a Google sign-in. Redeploy it with access set to \u201cAnyone\u201d.";
+    if(e.kind==="signin") return "The script is asking for a Google sign-in. Redeploy it with access set to “Anyone”.";
     if(e.kind==="notjson") return "The script didn't send stock data back. Make sure the new Code.gs is deployed as a new version.";
     if(e.kind==="script") return "Script error: "+e.message;
     return e.message||"Something went wrong.";
   }
-  function isBadPin(d){
-    if(!d) return false;
-    var s=((d.error||"")+" "+(d.message||"")+" "+(d.status||"")).toLowerCase();
-    if(/not set/.test(s)) return false;
-    return d.ok===false && /bad_pin|bad pin|wrong pin|invalid pin|incorrect pin|unauth|forbidden|denied/.test(s);
-  }
   function handleErr(e){
-    if(e && e.badPin){ pin=""; store("del","stockPin"); showPin("That PIN didn't work. Try again."); return; }
+    if(e && e.badPin){ pin=""; store("del","stockPin"); showPin("That PIN didn't match the one saved in the script."); return; }
+    if(e && e.kind==="script"){ setStatus("Not saved", true); toast(explain(e)); return; }
     setStatus("Not saved – retrying", true); toast(explain(e));
     scheduleRetry();
   }
@@ -235,45 +233,44 @@
   function load(){
     setStatus("Loading…");
     return call({action:"get"}).then(function(d){
-      applyServer(d); store("set","stockPin",pin); hidePin();
+      applyServer(d); store("set","stockPin",pin); $("pinScreen").hidden=true;
       setStatus("Up to date"); render(); flush();
     });
   }
   function applyServer(d){
-    var list = d.items || d.data || null;
-    var newCounts = {};
-    if(Array.isArray(list) && list.length){
-      var fromSheet = [];
-      list.forEach(function(r){
-        var name = r.name||r.item||r.Item; if(!name) return;
-        var def = DEFAULT_ITEMS.filter(function(x){return x.name===name;})[0] || {};
-        fromSheet.push({name:name,
-          section: r.section||r.Section||def.section||"Other"});
-        var c = num(r.count!==undefined?r.count:r.Count); if(c!==null) newCounts[name]=c;
-      });
-      items = fromSheet;
-    } else if(d.counts && typeof d.counts==="object"){
-      Object.keys(d.counts).forEach(function(k){ var c=num(d.counts[k]); if(c!==null) newCounts[k]=c; });
-    }
-    // keep unsaved local edits on top of server data
-    Object.keys(pending).forEach(function(k){ if(pending[k]==="") delete newCounts[k]; else newCounts[k]=pending[k]; });
-    counts = newCounts;
-    store("set","stockCache",JSON.stringify({items:items,counts:counts}));
+    var list = d.items || [];
+    if(!list.length) return;
+    var fresh = {count:{}, bought:{}}; usage = {};
+    items = list.map(function(r){
+      var name = r.name||r.item;
+      var def = DEFAULT_ITEMS.filter(function(x){return x.name===name;})[0] || {};
+      var c = num(r.count), b = num(r.bought);
+      if(c!==null) fresh.count[name]=c;
+      if(b!==null) fresh.bought[name]=b;
+      if(num(r.avg)!==null) usage[name]={avg:num(r.avg), weeks:r.weeks||0};
+      return {name:name, section:r.section||def.section||"Other"};
+    });
+    // keep unsaved local edits on top
+    Object.keys(pending).forEach(function(k){
+      var p=k.split("|"), f=p[0], n=p.slice(1).join("|");
+      if(pending[k]==="") delete fresh[f][n]; else fresh[f][n]=pending[k];
+    });
+    data = fresh; saveCache();
   }
 
-  function saveCount(name,val){
-    if(val===null){ delete counts[name]; pending[name]=""; } else { counts[name]=val; pending[name]=val; }
-    store("set","stockCache",JSON.stringify({items:items,counts:counts}));
-    render(); flush();
+  function saveValue(field,name,val){
+    if(val===null) delete data[field][name]; else data[field][name]=val;
+    pending[field+"|"+name] = val===null ? "" : val;
+    saveCache(); render(); flush();
   }
   function flush(){
     if(busy) return;
     var keys = Object.keys(pending);
     if(!keys.length){ setStatus("All saved"); return; }
     busy = true; setStatus("Saving…");
-    var name = keys[0], val = pending[name];
-    call({action:"set",item:name,count:val}).then(function(){
-      if(pending[name]===val) delete pending[name];
+    var k = keys[0], p=k.split("|"), val = pending[k];
+    call({action:"set", field:p[0], item:p.slice(1).join("|"), value:val}).then(function(){
+      if(pending[k]===val) delete pending[k];
       busy=false; flush();
     }).catch(function(e){ busy=false; handleErr(e); });
   }
@@ -283,21 +280,28 @@
   }
   window.addEventListener("online", function(){ flush(); });
 
-  function clearAll(){
-    setStatus("Clearing…");
+  function startNewCount(){
+    if(Object.keys(pending).length){ toast("Still saving. Try again in a moment."); flush(); return; }
+    setStatus("Saving week…");
     call({action:"clear"}).then(function(){
-      counts={}; pending={}; store("set","stockCache",JSON.stringify({items:items,counts:counts}));
-      render(); setStatus("New count started"); toast("Counts cleared. New count started.");
+      data={count:{},bought:{}}; pending={}; saveCache();
+      toast("This week is saved to History. New count started.");
+      return load();
     }).catch(function(e){
       if(e && e.badPin) return handleErr(e);
-      setStatus("Could not clear", true); toast("Could not clear. Check Wi-Fi and try again.");
+      setStatus("Could not start", true); toast(explain(e));
     });
   }
 
   function setStatus(t,bad){ var s=$("status"); s.textContent=t; s.className="status"+(bad?" bad":""); }
-  function toast(t){ var el=$("toast"); el.textContent=t; el.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(function(){el.hidden=true;},3000); }
+  function toast(t){ var el=$("toast"); el.textContent=t; el.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(function(){el.hidden=true;},3500); }
 
-  /* ---------- Order logic ---------- */
+  /* ---------- Suggestion ---------- */
+  function suggest(name){
+    var u=usage[name], c=data.count[name];
+    if(!u || c===undefined) return null;
+    return Math.max(0, Math.ceil(u.avg*BUFFER - c));
+  }
   function sections(list){
     var order=[], map={};
     list.forEach(function(it){ var s=it.section||"Other"; if(!map[s]){map[s]=[];order.push(s);} map[s].push(it); });
@@ -305,41 +309,58 @@
   }
 
   /* ---------- Render ---------- */
-  function render(){
-    var html="", uncounted=0;
+  var FIELD = {
+    count:{empty:"Tap to count", ask:"What's on the shelf now?", label:"on shelf"},
+    bought:{empty:"Tap to add", ask:"How much did you buy this week?", label:"bought"}
+  };
+  function renderList(field){
+    var html="", missing=0;
+    if(field==="bought") html+='<div class="note">After shopping, enter how much you bought of each item, in the same unit you count it in. It is saved with this week’s count when a new count starts.</div>';
     sections(items).forEach(function(sec){
       html += '<h2>'+esc(sec.name)+'</h2>';
       sec.items.forEach(function(it){
-        var c=counts[it.name], has=c!==undefined;
-        if(!has) uncounted++;
-        html += '<button class="row" data-item="'+esc(it.name)+'" aria-label="'+esc(it.name)+', '+(has?'on shelf '+fmt(c):'not counted')+'. Tap to enter count.">'+
-          '<span class="name">'+esc(it.name)+'</span>'+
-          '<span class="val'+(has?'':' empty')+'">'+(has?fmt(c):'Tap to count')+'</span></button>';
+        var v=data[field][it.name], has=v!==undefined;
+        if(!has) missing++;
+        var hint = field==="bought" && data.count[it.name]!==undefined ? '<span class="hint">On shelf: '+fmt(data.count[it.name])+(suggest(it.name)!==null?' · Suggested: '+suggest(it.name):'')+'</span>' : '';
+        html += '<button class="row" data-field="'+field+'" data-item="'+esc(it.name)+'" aria-label="'+esc(it.name)+', '+(has?FIELD[field].label+' '+fmt(v):'not entered')+'. Tap to enter.">'+
+          '<span class="name">'+esc(it.name)+hint+'</span>'+
+          '<span class="val'+(has?'':' empty')+'">'+(has?fmt(v):FIELD[field].empty)+'</span></button>';
       });
     });
-    if(uncounted) html = '<div class="note"><b>'+uncounted+'</b> of '+items.length+' items not counted yet.</div>'+html;
-    $("viewCount").innerHTML = html;
-
-    // Summary view: every item and how much is on hand
-    var oh="";
-    sections(items).forEach(function(sec){
-      oh+='<h2>'+esc(sec.name)+'</h2>';
-      sec.items.forEach(function(it){
-        var c=counts[it.name];
-        oh+='<div class="order-item"><b>'+esc(it.name)+'</b><span class="qty'+(c===undefined?' missing':'')+'">'+(c===undefined?'Not counted':fmt(c))+'</span></div>';
-      });
-    });
-    if(uncounted) oh='<div class="note"><b>'+uncounted+'</b> of '+items.length+' items not counted yet.</div>'+oh;
-    $("viewOrder").innerHTML = oh;
+    if(field==="count" && missing) html = '<div class="note"><b>'+missing+'</b> of '+items.length+' items not counted yet.</div>'+html;
+    $("view-"+field).innerHTML = html;
   }
+  function renderSummary(){
+    var anyUsage = Object.keys(usage).length>0;
+    var html = anyUsage ? '<div class="note">Avg use is per week, from your History. Suggested = avg use + 20%, minus what’s on the shelf. Compare it with what you bought. You decide.</div>'
+                        : '<div class="note">Avg use and suggested amounts appear after two weekly counts are saved (tap “Start new count” each week).</div>';
+    sections(items).forEach(function(sec){
+      html += '<h2>'+esc(sec.name)+'</h2><table><thead><tr><th scope="col">Item</th><th scope="col">On shelf</th><th scope="col">Bought</th><th scope="col">Avg use/wk</th><th scope="col">Suggested</th></tr></thead><tbody>';
+      sec.items.forEach(function(it){
+        var c=data.count[it.name], b=data.bought[it.name], u=usage[it.name], s=suggest(it.name);
+        html += '<tr><td>'+esc(it.name)+'</td>'+
+          '<td'+(c===undefined?' class="dim"':'')+'>'+(c===undefined?'Not counted':fmt(c))+'</td>'+
+          '<td'+(b===undefined?' class="dim"':'')+'>'+(b===undefined?'–':fmt(b))+'</td>'+
+          '<td'+(u?'':' class="dim"')+'>'+(u?fmt(Math.round(u.avg*10)/10):'–')+'</td>'+
+          '<td class="'+(s===null?'dim':'sugg')+'">'+(s===null?'–':s)+'</td></tr>';
+      });
+      html += '</tbody></table>';
+    });
+    $("view-summary").innerHTML = html;
+  }
+  function render(){ renderList("count"); renderList("bought"); renderSummary(); }
 
-  function orderText(){
+  function summaryText(){
     var lines=["doblexo stock count – "+new Date().toLocaleDateString()];
     sections(items).forEach(function(sec){
       lines.push("", sec.name.toUpperCase());
       sec.items.forEach(function(it){
-        var c=counts[it.name];
-        lines.push("- "+it.name+": "+(c===undefined?"not counted":fmt(c)));
+        var c=data.count[it.name], b=data.bought[it.name], u=usage[it.name], s=suggest(it.name);
+        var parts=[c===undefined?"not counted":"have "+fmt(c)];
+        if(b!==undefined) parts.push("bought "+fmt(b));
+        if(u) parts.push("uses ~"+fmt(Math.round(u.avg*10)/10)+"/wk");
+        if(s!==null) parts.push("suggest "+s);
+        lines.push("- "+it.name+": "+parts.join(" · "));
       });
     });
     return lines.join("\n");
@@ -359,29 +380,30 @@
   /* ---------- Tabs ---------- */
   function show(v){
     view=v;
-    $("tabCount").setAttribute("aria-selected", v==="count"); $("tabOrder").setAttribute("aria-selected", v==="order");
-    $("viewCount").hidden = v!=="count"; $("viewOrder").hidden = v!=="order";
-    $("barCount").hidden = v!=="count"; $("barOrder").hidden = v!=="order";
+    ["count","bought","summary"].forEach(function(k){
+      $("tab-"+k).setAttribute("aria-selected", k===v);
+      $("view-"+k).hidden = k!==v;
+    });
+    $("bar-count").hidden = v!=="count"; $("bar-summary").hidden = v!=="summary";
     window.scrollTo(0,0);
   }
-  $("tabCount").onclick=function(){show("count");};
-  $("tabOrder").onclick=function(){show("order");};
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){ t.onclick=function(){ show(t.dataset.view); }; });
   $("copyBtn").onclick=function(){
-    copyText(orderText()).then(function(ok){ toast(ok?"Summary copied.":"Couldn't copy on this device."); });
+    copyText(summaryText()).then(function(ok){ toast(ok?"Summary copied.":"Couldn't copy on this device."); });
   };
 
   /* ---------- Start new count (two taps) ---------- */
   var armTimer=null;
   $("newCountBtn").onclick=function(){
     var b=this;
-    if(b.dataset.armed){ clearTimeout(armTimer); disarm(); clearAll(); return; }
-    b.dataset.armed="1"; b.className="big danger"; b.textContent="Tap again to clear all counts";
+    if(b.dataset.armed){ clearTimeout(armTimer); disarm(); startNewCount(); return; }
+    b.dataset.armed="1"; b.className="big danger"; b.textContent="Tap again to save this week & start new";
     armTimer=setTimeout(disarm,5000);
   };
   function disarm(){ var b=$("newCountBtn"); delete b.dataset.armed; b.className="big ghost"; b.textContent="Start new count"; }
 
-  /* ---------- Count keypad ---------- */
-  var padItem=null, padVal="";
+  /* ---------- Number keypad ---------- */
+  var padItem=null, padField="count", padVal="";
   function buildPad(el, keys, onKey){
     el.innerHTML = keys.map(function(k){
       var label = k==="back"?"⌫":k, aria = k==="back"?"Delete":k==="."?"Decimal point":k;
@@ -400,23 +422,32 @@
     if(padVal===""){ d.textContent="Type amount"; d.className="display placeholder"; }
     else { d.textContent=padVal; d.className="display"; }
   }
-  function openPad(name){
+  function openPad(field,name){
     var it=items.filter(function(x){return x.name===name;})[0]; if(!it) return;
-    padItem=it; padVal = counts[name]!==undefined ? fmt(counts[name]) : "";
+    padItem=it; padField=field;
+    var cur=data[field][name]; padVal = cur!==undefined ? fmt(cur) : "";
     $("padTitle").textContent=it.name;
-    $("padSub").textContent="What's on the shelf now?";
-    drawPad(); $("countPad").hidden=false; $("padSave").focus();
+    var sub=FIELD[field].ask;
+    if(field==="bought"){ var s=suggest(name); if(s!==null) sub+=" (suggested "+s+")"; }
+    $("padSub").textContent=sub;
+    drawPad(); $("numPad").hidden=false; $("padSave").focus();
   }
-  function closePad(){ $("countPad").hidden=true; var r=padItem&&document.querySelector('.row[data-item="'+CSS.escape(padItem.name)+'"]'); padItem=null; if(r) r.focus(); }
-  function commit(){ if(!padItem) return; var v=padVal===""?null:num(padVal.replace(/\.$/,"")); saveCount(padItem.name,v); }
-  $("viewCount").addEventListener("click",function(e){ var r=e.target.closest(".row"); if(r) openPad(r.dataset.item); });
+  function closePad(){
+    $("numPad").hidden=true;
+    var r=padItem&&document.querySelector('#view-'+padField+' .row[data-item="'+CSS.escape(padItem.name)+'"]');
+    padItem=null; if(r) r.focus();
+  }
+  function commit(){ if(!padItem) return; var v=padVal===""?null:num(padVal.replace(/\.$/,"")); saveValue(padField,padItem.name,v); }
+  ["count","bought"].forEach(function(f){
+    $("view-"+f).addEventListener("click",function(e){ var r=e.target.closest(".row"); if(r) openPad(f, r.dataset.item); });
+  });
   $("padCancel").onclick=closePad;
   $("padSave").onclick=function(){ commit(); closePad(); };
   $("padBlank").onclick=function(){ padVal=""; commit(); closePad(); };
   $("padNext").onclick=function(){
-    var cur=padItem; commit();
-    var i=items.indexOf(items.filter(function(x){return x.name===cur.name;})[0]);
-    if(i>-1 && i<items.length-1) openPad(items[i+1].name); else { closePad(); toast("That was the last item."); }
+    var cur=padItem, f=padField; commit();
+    var i=items.map(function(x){return x.name;}).indexOf(cur.name);
+    if(i>-1 && i<items.length-1) openPad(f, items[i+1].name); else { closePad(); toast("That was the last item."); }
   };
 
   /* ---------- PIN screen ---------- */
@@ -433,8 +464,7 @@
     for(var i=0;i<n;i++) h+='<span class="dot'+(i<pinVal.length?' on':'')+'"></span>';
     $("pinDots").innerHTML=h; $("pinCount").textContent=pinVal.length+" digits entered";
   }
-  function showPin(msg){ pinVal=""; drawPin(); $("pinErr").textContent=msg||""; $("countPad").hidden=true; $("pinScreen").hidden=false; setStatus("PIN needed",true); }
-  function hidePin(){ $("pinScreen").hidden=true; }
+  function showPin(msg){ pinVal=""; drawPin(); $("pinErr").textContent=msg||""; $("numPad").hidden=true; $("pinScreen").hidden=false; setStatus("PIN needed",true); }
   $("pinGo").onclick=function(){
     if(pinVal.length<4){ $("pinErr").textContent="Enter at least 4 digits."; return; }
     pin=pinVal; $("pinGo").disabled=true; $("pinGo").textContent="Checking…";
@@ -443,17 +473,13 @@
       else { pin=""; $("pinErr").textContent=explain(e); setStatus("Not connected",true); }
     }).then(function(){ $("pinGo").disabled=false; $("pinGo").textContent="Unlock"; });
   };
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape" && !$("numPad").hidden) closePad(); });
 
-  document.addEventListener("keydown",function(e){
-    if(e.key==="Escape" && !$("countPad").hidden) closePad();
-  });
-
-  $("ver").textContent = "Page version 8 · script …" + API.split("/s/")[1].slice(-10, -5);
   /* ---------- Start ---------- */
-  try{ var cache=JSON.parse(store("get","stockCache")||"null"); if(cache&&cache.items){ items=cache.items; counts=cache.counts||{}; } }catch(e){}
+  $("ver").textContent = "Page version "+VERSION+" · script …" + API.split("/s/")[1].slice(-10, -5);
+  try{ var cache=JSON.parse(store("get","stockCache2")||"null"); if(cache&&cache.items){ items=cache.items; data=cache.data||data; usage=cache.usage||{}; } }catch(e){}
   render();
   if(!pin) showPin(); else load().catch(handleErr);
-  // refresh from the sheet when the tablet wakes up / tab comes back
   document.addEventListener("visibilitychange",function(){ if(!document.hidden && pin && !busy && !Object.keys(pending).length) load().catch(handleErr); });
 })();
 </script>
